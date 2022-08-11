@@ -1,5 +1,6 @@
 import json
 from typing import Type
+from constants import DATA_JSON
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -16,20 +17,20 @@ def create_app(config_object: Type[DevConfig] | Type[ProdConfig]) -> Flask:
     """
     returns Flask application with set up parameters
     """
-    application: Flask = Flask(__name__)
-    application.config.from_object(config_object)
-    application.app_context().push()
-    db.init_app(application)
+    app: Flask = Flask(__name__)
+    app.config.from_object(config_object)
+    app.app_context().push()
+    db.init_app(app)
 
-    with application.app_context():
+    with app.app_context():
         create_data(db)
 
-    api.init_app(application)
+    api.init_app(app)
 
-    for item in application.config:
-        print(f'{item}: {application.config[item]}')
+    for item in app.config:
+        print(f'{item}: {app.config[item]}')
 
-    return application
+    return app
 
 
 def create_data(db: SQLAlchemy) -> None:
@@ -39,7 +40,7 @@ def create_data(db: SQLAlchemy) -> None:
     db.drop_all()
     db.create_all()
 
-    with open('init_data/data.json', 'r', encoding='utf-8') as jsonfile:
+    with open(DATA_JSON, 'r', encoding='utf-8') as jsonfile:
         init_data = json.load(jsonfile)
 
         for movie in init_data["movies"]:

@@ -1,7 +1,7 @@
-# этот файл для глобальных констант. чтобы не хардкодить строки/числа в коде, выносите их сюда.
-# например вместо C:\\Windows в коде, создайте константу WINDOWS_PATH здесь и присвойте ей значение
+from pathlib import Path
 
-# Пример
+BASE_DIR: Path = Path(__file__).resolve().parent
 
-# CONSTANT_NAME = "value"
-# LOG_DIR = "logs"
+INIT_DATA_DIR: Path = BASE_DIR.joinpath('init_data')
+
+DATA_JSON: Path = INIT_DATA_DIR.joinpath('data.json')
