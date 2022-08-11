@@ -1,9 +1,10 @@
 import json
+from typing import Type
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-from config import DevConfig
+from config import DevConfig, ProdConfig
 from dao.model.genre_model import Genre
 from dao.model.director_model import Director
 from dao.model.movie_model import Movie
@@ -11,18 +12,23 @@ from setup_db import db
 from views import api
 
 
-def create_app() -> Flask:
+def create_app(config_object: Type[DevConfig] | Type[ProdConfig]) -> Flask:
     """
     returns Flask application with set up parameters
     """
     application: Flask = Flask(__name__)
-    application.config.from_object(DevConfig())
+    application.config.from_object(config_object)
+    application.app_context().push()
     db.init_app(application)
 
     with application.app_context():
         create_data(db)
 
     api.init_app(application)
+
+    for item in application.config:
+        print(f'{item}: {application.config[item]}')
+
     return application
 
 
@@ -71,5 +77,5 @@ def create_data(db: SQLAlchemy) -> None:
 
 
 if __name__ == '__main__':
-    app = create_app()
+    app = create_app(DevConfig)
     app.run()
