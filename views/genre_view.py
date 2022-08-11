@@ -6,7 +6,7 @@ from dao.model.genre_model import Genre
 from implemented import genre_service
 from dao.model.models import GenreModel
 
-genres_ns: Namespace = Namespace('directors', description='namespace for directors')
+genres_ns: Namespace = Namespace('genres', description='namespace for directors')
 
 genre_model = GenreModel()
 genres_model = GenreModel(many=True)
