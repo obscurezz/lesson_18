@@ -1,46 +1,75 @@
-# основной файл приложения. здесь конфигурируется фласк, сервисы, SQLAlchemy и все остальное что требуется для приложения.
-# этот файл часто является точкой входа в приложение
+import json
 
-# Пример
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
-# from flask import Flask
-# from flask_restx import Api
-#
-# from config import Config
-# from models import Review, Book
-# from setup_db import db
-# from views.books import book_ns
-# from views.reviews import review_ns
-#
-# функция создания основного объекта app
-# def create_app(config_object):
-#     app = Flask(__name__)
-#     app.config.from_object(config_object)
-#     register_extensions(app)
-#     return app
-#
-#
-# функция подключения расширений (Flask-SQLAlchemy, Flask-RESTx, ...)
-# def register_extensions(app):
-#     db.init_app(app)
-#     api = Api(app)
-#     api.add_namespace(...)
-#     create_data(app, db)
-#
-#
-# функция
-# def create_data(app, db):
-#     with app.app_context():
-#         db.create_all()
-#
-#         создать несколько сущностей чтобы добавить их в БД
-#
-#         with db.session.begin():
-#             db.session.add_all(здесь список созданных объектов)
-#
-#
-# app = create_app(Config())
-# app.debug = True
-#
-# if __name__ == '__main__':
-#     app.run(host="localhost", port=10001, debug=True)
+from config import DevConfig
+from dao.model.genre_model import Genre
+from dao.model.director_model import Director
+from dao.model.movie_model import Movie
+from setup_db import db
+from views import api
+
+
+def create_app() -> Flask:
+    """
+    returns Flask application with set up parameters
+    """
+    application: Flask = Flask(__name__)
+    application.config.from_object(DevConfig())
+    db.init_app(application)
+
+    with application.app_context():
+        create_data(db)
+
+    api.init_app(application)
+    return application
+
+
+def create_data(db: SQLAlchemy) -> None:
+    """
+    db: database object for initialized app
+    """
+    db.drop_all()
+    db.create_all()
+
+    with open('init_data/data.json', 'r', encoding='utf-8') as jsonfile:
+        init_data = json.load(jsonfile)
+
+        for movie in init_data["movies"]:
+            m = Movie(
+                id=movie["pk"],
+                title=movie["title"],
+                description=movie["description"],
+                trailer=movie["trailer"],
+                year=movie["year"],
+                rating=movie["rating"],
+                genre_id=movie["genre_id"],
+                director_id=movie["director_id"],
+            )
+            with db.session.begin():
+                db.session.add(m)
+                db.session.commit()
+
+        for director in init_data["directors"]:
+            d = Director(
+                id=director["pk"],
+                name=director["name"],
+            )
+            with db.session.begin():
+                db.session.add(d)
+                db.session.commit()
+
+        for genre in init_data["genres"]:
+            g = Genre(
+                id=genre["pk"],
+                name=genre["name"],
+            )
+            with db.session.begin():
+                db.session.add(g)
+                db.session.commit()
+
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run()
