@@ -46,7 +46,9 @@ class MovieDAO:
     # update movie set ... where id = ...
     def update_item_by_pk(self, pk: int, **kwargs):
         update_item: Type[Movie] = self.session.query(self.__model__).get(pk)
-        update_item: Movie = update_item(**kwargs)
+
+        for k, v in kwargs.items():
+            setattr(update_item, k, v)
 
         self.session.add(update_item)
         self.session.commit()
