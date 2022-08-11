@@ -30,4 +30,4 @@ def create_app(config_object: Type[DevConfig] | Type[ProdConfig]) -> Flask:
 
 if __name__ == '__main__':
     app = create_app(DevConfig)
-    app.run()
+    app.run(use_reloader=False)
